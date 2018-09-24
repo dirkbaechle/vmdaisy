@@ -1,0 +1,39 @@
+{"slaves":{
+"suse12.3":{
+    "bbname" : "suse123-python-2.7",
+    "bbstate" : "idle",
+    "bbpending" : 0,
+    "lastpending" : 0,
+    "lasttime" : 0,
+    "kvmimg" : "/home/dirk/kvm/susetry.qcow2",
+    "kvmpid" : 0,
+    "sshserver" : "192.168.1.10",
+    "sshuser" : "dirk",
+    "sshpass" : "xXxXxX",
+    "slavedir" : "/buildbot",
+    "shutdown" : "",
+    "startdelay" : 240,
+    "stopdelay" : 120
+}, 
+"fedora17" : {
+    "bbname" : "fedora17-python-2.7",
+    "bbstate" : "idle",
+    "bbpending" : 0,
+    "lastpending" : 0,
+    "lasttime" : 0,
+    "kvmimg" : "/home/dirk/kvm/fedotry.qcow2",
+    "kvmpid" : 0,
+    "sshserver" : "192.168.1.10",
+    "sshuser" : "buildslave",
+    "sshpass" : "xXxXxX",
+    "slavedir" : "/buildbot/buildslave",
+    "shutdown" : "sudo /sbin/shutdown now",
+    "startdelay" : 120,
+    "stopdelay" : 120
+} },
+"kvmopts" : "-m 2048 -cpu host -smp cores=2,threads=1,sockets=1 -device e1000,netdev=tunnel -netdev tap,id=tunnel,ifname=vnet0",
+"bbserver" : "buildbot.scons.org",
+"bbdelay" : 120,
+"idlepoll" : 600,
+"removekey" : "ssh-keygen -f /home/dirk/.ssh/known_hosts -R"}
+
