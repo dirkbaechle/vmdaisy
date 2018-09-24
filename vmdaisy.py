@@ -66,6 +66,8 @@ def start_kvm(name):
     cmdline = "sudo kvm %s -hda %s" % (kvmopts, slave['kvmimg']) 
     cmds = shlex.split(cmdline)
     subprocess.Popen(cmds)
+    
+    return True
 
 def shutdown_buildslave(name):
     """ Shuts down the buildslave process for local machine name.
@@ -370,9 +372,15 @@ def read_config(fpath):
 
     return False
 
+# Mapping from command line keywords to function names
+run_method = {"kvmup": start_kvm,
+              "kvmdown": shutdown_kvm,
+              "bbup": start_buildslave,
+              "bbdown": shutdown_buildslave}
+
 def usage():
-    print "VMDaisy - db, 2014-08-12"
-    print "Usage: vmdaisy <config.json> [info|kvmup *|kvmdown *|bbup *|bbdown *]"
+    print "VMDaisy - db, 2018-09-22"
+    print "Usage: vmdaisy <config.json> [info|state|kvmup *|kvmdown *|bbup *|bbdown *]"
     
 def main():
     if len(sys.argv) < 2:
@@ -402,25 +410,23 @@ def main():
             print "  None"
         print ""
         return
+    elif sys.argv[2] == "state":
+        states = poll_buildbot(config['bbserver'])
+        update_config(states)
+        print "Slaves:"
+        for name,c in config['slaves'].iteritems():
+            print "  %s" % name
+            print "    bbname:  %s" % c.get('bbname','')
+            print "    bbstate: %s" % c['bbstate']
+            print "    pending: %d" % c['bbpending']
+        return
 
     if len(sys.argv) > 3:
         name = sys.argv[3]
         if name not in config['slaves']:
             print "Invalid name '%s'!" % name
             return
-        if sys.argv[2] == "kvmup":
-            start_kvm(name)
-            return
-        if sys.argv[2] == "kvmdown":
-            print shutdown_kvm(name)
-            return
-        if sys.argv[2] == "bbup":
-            print start_buildslave(name)
-            return
-        if sys.argv[2] == "bbdown":
-            print shutdown_buildslave(name)
-            return
+        print run_method[sys.argv[2]](name)
 
 if __name__ == "__main__":
     main()
-
