@@ -1,9 +1,13 @@
+================
+Setup of vmdaisy
+================
+
 Host system setup
 =================
 
 Setup Ubuntu 14.04 normal.
 Ensured that basic networking runs fine
-Changed network config as given in the attached file, to enable bridging functionaltiy for VMs
+Changed network config as given in the file `rsc/interfaces`, to enable bridging functionaltiy for VMs
 
 When starting "kvm" as normal::
 
@@ -14,7 +18,7 @@ there would be an error::
     "qemu-system-x86_64: -netdev tap,id=tunnel,ifname=vnet0: could not configure /dev/net/tun (vnet0): Operation not permitted
     qemu-system-x86_64: -netdev tap,id=tunnel,ifname=vnet0: Device 'tap' could not be initialized"
 
-as described on "http://wiki.libvirt.org" (link at http://stackoverflow.com/questions/20153050/why-do-i-get-a-permissions-error-when-starting-a-kvm-vm-with-a-tap-interface ) , peformed the following steps
+as described on "http://wiki.libvirt.org" (link at http://stackoverflow.com/questions/20153050/why-do-i-get-a-permissions-error-when-starting-a-kvm-vm-with-a-tap-interface ) , performed the following steps
 
 
 1) disable SELinux
@@ -63,19 +67,19 @@ address (IPv4 settings)::
 
 , and ensured that the "ssh" service is allowed for the External zone in the Firewall (openSuSE 12.3). 
 
-Checked login from the host machine with
+Checked login from the host machine with::
 
-  ssh dirk@192.168.178.10
+    ssh dirk@192.168.178.10
 
 worked!
 
 
 Problem::
 
-    The authenticity of host '192.168.1.10 (192.168.1.10)' can't be established.
+    The authenticity of host '192.168.178.10 (192.168.1.10)' can't be established.
     ECDSA key fingerprint is 9c:19:e2:2c:1c:c4:ec:03:4c:47:5f:7e:69:bf:2a:00.
     Are you sure you want to continue connecting (yes/no)? yes
-    Warning: Permanently added '192.168.1.10' (ECDSA) to the list of known hosts.
+    Warning: Permanently added '192.168.178.10' (ECDSA) to the list of known hosts.
     Password: 
 
 How to handle this when all VMs have the same IP address?
@@ -88,9 +92,9 @@ Now using Paramiko, with AutoAdd policy for unknown hosts.
 
 Requirements: Hosts need to have an ssh server installed.
 
-Additionally, for the shutdown of the machine, we have to grant the buildslave user the ight to excute /sbin/shutdown.
+Additionally, for the shutdown of the machine, we have to grant the buildslave user the right to execute /sbin/shutdown.
 
-There are several methods available, we prefer to edit the /etc/sudoers file with::
+There are several methods available, we prefer to edit the `/etc/sudoers` file with::
 
     sudo visudo
 
@@ -106,7 +110,7 @@ at the end of the file.
 For ssh relogin (remote host changes - man in the middle attack)
 ================================================================
 
-Add file ~/.ssh/config on host system with contents::
+Add file `~/.ssh/config` on host system with contents::
 
     Host 192.168.178.10
     StrictHostKeyChecking no
@@ -122,8 +126,8 @@ In the VM you also have to make sure that::
 
     Defaults requiretty
 
-is not activated in the /etc/sudoers file. This is default setting for
-most Fedore, RedHat distributions.
+is not activated in the `/etc/sudoers` file. This is default setting for
+most Fedora, RedHat distributions.
 
 It's possible to remove this restriction on a per-user basis, by
 adding::
@@ -136,7 +140,24 @@ Special changes for Debian
 In latest versions of Debian (and possibly other dists), the root password is asked again during a shutdown. The installed policy watcher detects that other users are logged in and tries to protect them from data loss.
 However, we don't really care and want to get rid of any interaction for the
 "shutdown" command. Changing the policy can be done by editing the file
-"/usr/share/polkit-1/actions/org.freedesktop.consolekit.policy" . Change the
-setting "auth_admin_keep" in both action ids, "org.freedesktop.consolekit.system.stop-multiple-users" 
-and "org.freedesktop.consolekit.system.restart-multiple-users" to "yes" instead.
+"`/usr/share/polkit-1/actions/org.freedesktop.consolekit.policy`" . Change the
+setting "`auth_admin_keep`" in both action ids, "`org.freedesktop.consolekit.system.stop-multiple-users`" 
+and "`org.freedesktop.consolekit.system.restart-multiple-users`" to "yes" instead.
  
+
+Useful KVM command lines
+========================
+
+Starting the Debian 7.6 VM with a mounted boot iso::
+
+    sudo kvm -m 2048 -cpu host -smp cores=2,threads=1,sockets=1 -device e1000,netdev=tunnel -netdev tap,id=tunnel,ifname=vnet0 -hda /home/dirk/kvm/debiantry.qcow2 -cdrom /home/dirk/kvm/isos/debian-7.6.0-i386-DVD-1.iso
+
+The same, but booting from the OS DVD (iso) first, e.g. for installing a new OS::
+
+    sudo kvm -m 2048 -cpu host -smp cores=2,threads=1,sockets=1 -device e1000,netdev=tunnel -netdev tap,id=tunnel,ifname=vnet0 -hda /home/dirk/kvm/debiantry.qcow2 -cdrom /home/dirk/kvm/isos/debian-7.6.0-i386-DVD-1.iso -boot d
+
+
+Creating new image::
+
+    qemu-img create -f qcow2 mydisk.qcow2 20G
+
