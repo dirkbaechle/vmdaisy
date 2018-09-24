@@ -60,7 +60,10 @@ def start_kvm(name):
     """
     global config
     slave = config['slaves'][name]
-    cmdline = "sudo kvm %s -hda %s" % (config['kvmopts'], slave['kvmimg']) 
+    kvmopts = slave.get('kvmopts','')
+    if not kvmopts:
+        kvmopts = config['kvmopts']
+    cmdline = "sudo kvm %s -hda %s" % (kvmopts, slave['kvmimg']) 
     cmds = shlex.split(cmdline)
     subprocess.Popen(cmds)
 
@@ -190,7 +193,7 @@ def poll_buildbot(server):
         with the basic infos we need: (name, state, #pendingBuilds).
     """
     states = []
-    print "Polling buildbot server '%s'" % server
+    print "Polling buildbot server '%s' - %s" % (server, time.asctime())
     try:
         jsonfile = urllib2.urlopen("http://%s/json" % server)
         output = open('state.json','wb')
